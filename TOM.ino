@@ -1,6 +1,19 @@
+// @author James Hudson bugs.feedback.whatever@gmail.com
+// @todo license text and header - please see github project for license
+
+// A simple example program to retrieve notifications from your device, and output them to the Serial console.
+
+
+// Header for this library, from https://www.github.com/Smartphone-Companions/ESP32-ANCS-Notifications.git
 #include "esp32notifications.h"
 
-#define MOTOR 27
+#define MOTOR 16
+
+/////
+// Different hardware presets; uncomment the correct device.
+// Or feel free to add your own board layout for your specific hardware.
+// See the ESP32 pinout to choose a free GPIO pin on your hardware.
+
 #define HARDWARE_STANDARD
 
 #ifdef HARDWARE_STANDARD
@@ -11,10 +24,17 @@
     #error Hardware buttons not supported!
 #endif
 
+//////////
+// Example code begins
+
+// Create an interface to the BLE notification library
 BLENotifications notifications;
 
+// Holds the incoming call's ID number, or zero if no notification
 uint32_t incomingCallNotificationUUID;
 
+// This callback will be called when a Bluetooth LE connection is made or broken.
+// You can update the ESP 32's UI or take other action here.
 void onBLEStateChanged(BLENotifications::State state) {
   switch(state) {
       case BLENotifications::StateConnected:
@@ -32,7 +52,12 @@ void onBLEStateChanged(BLENotifications::State state) {
 }
 
 
-
+// A notification arrived from the mobile device, ie a social media notification or incoming call.
+// parameters:
+//  - notification: an Arduino-friendly structure containing notification information. Do not keep a
+//                  pointer to this data - it will be destroyed after this function.
+//  - rawNotificationData: a pointer to the underlying data. It contains the same information, but is
+//                         not beginner-friendly. For advanced use-cases.
 void onNotificationArrived(const ArduinoNotification * notification, const Notification * rawNotificationData) {
     Serial.print("Got notification: ");   
     Serial.println(notification->title); // The title, ie name of who sent the message
@@ -51,9 +76,11 @@ void onNotificationArrived(const ArduinoNotification * notification, const Notif
     digitalWrite(MOTOR, HIGH);
     delay(1000);
     digitalWrite(MOTOR, LOW);
+    Serial.println("Notification received");
 }
 
 
+// A notification was cleared
 void onNotificationRemoved(const ArduinoNotification * notification, const Notification * rawNotificationData) {
      Serial.print("Removed notification: ");   
      Serial.println(notification->title);
@@ -66,9 +93,10 @@ void onNotificationRemoved(const ArduinoNotification * notification, const Notif
 void setup() {
   // Button configuration. It is usual to have buttons configured as INPUT_PULLUP in the hardware design,
   // but check the details for your specific device 
-  pinMode(BUTTON_A, INPUT_PULLUP);
-  pinMode(BUTTON_B, INPUT_PULLUP);
-  pinMode(BUTTON_C, INPUT_PULLUP);
+  // pinMode(BUTTON_A, INPUT_PULLUP);
+  // pinMode(BUTTON_B, INPUT_PULLUP);
+  // pinMode(BUTTON_C, INPUT_PULLUP);
+  pinMode(MOTOR, OUTPUT);
 
     Serial.begin(115200);
     while(!Serial) {
